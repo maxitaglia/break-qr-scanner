@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,6 +7,7 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       padding: 22px;
@@ -15,6 +15,7 @@
       color: #20252b;
       font-family: Arial, sans-serif;
     }
+
     .contenedor {
       max-width: 440px;
       margin: 20px auto;
@@ -23,44 +24,59 @@
       border-radius: 16px;
       box-shadow: 0 3px 16px #00000012;
     }
+
     h1 { text-align: center; margin: 0 0 6px; }
+
     .subtitulo {
       text-align: center;
       color: #68717b;
       margin-bottom: 24px;
     }
+
     label {
       display: block;
       font-weight: bold;
       margin: 16px 0 7px;
     }
+
     input, select, button {
       width: 100%;
       padding: 13px;
       border-radius: 9px;
       font-size: 16px;
     }
+
     input, select {
       border: 1px solid #ccd2d8;
       background: white;
     }
+
     button {
       border: 0;
       background: #171c22;
       color: white;
       font-weight: bold;
-      margin-top: 18px;
+      margin-top: 14px;
       cursor: pointer;
     }
+
     button:disabled { opacity: .5; }
+
     .secundario {
       background: #e7eaee;
       color: #20252b;
     }
+
+    .peligro {
+      background: #a52b2b;
+      color: white;
+    }
+
     #lector {
       width: 100%;
       margin-top: 18px;
     }
+
     #estado {
       margin-top: 18px;
       padding: 14px;
@@ -70,11 +86,37 @@
       line-height: 1.45;
       text-align: center;
     }
+
     .oculto { display: none; }
+
     .nombre-coordinador {
       text-align: center;
       color: #59636e;
       margin: 12px 0;
+    }
+
+    .salida {
+      margin-top: 16px;
+      padding: 15px;
+      background: #eef2f5;
+      border-radius: 10px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .salida strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .sin-salida {
+      color: #a52b2b;
+      font-weight: bold;
+    }
+
+    .con-salida {
+      color: #176b3a;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -99,31 +141,57 @@
     </section>
 
     <section id="panel" class="oculto">
+
       <div id="coordinador" class="nombre-coordinador"></div>
 
-      <label for="etapa">Tipo de control</label>
-      <select id="etapa">
-        <option value="IDA">IDA</option>
-        <option value="REGRESO">REGRESO</option>
-      </select>
+      <div class="salida">
+        <strong>ESTADO DE LA SALIDA</strong>
+        <div id="estadoSalida">Consultando...</div>
+        <div id="detalleSalida"></div>
+      </div>
 
-      <div id="lector"></div>
+      <section id="controlesAutorizados" class="oculto">
+        <button id="btnAbrir" onclick="abrirNuevaSalida()">
+          Abrir nueva salida
+        </button>
 
-      <button id="btnCamara" onclick="iniciarCamara()">
-        Activar cámara
-      </button>
+        <button id="btnCerrar" class="peligro"
+                onclick="cerrarSalidaActual()">
+          Cerrar salida
+        </button>
+      </section>
 
-      <button id="btnSiguiente" class="secundario oculto"
-              onclick="iniciarCamara()">
-        Escanear siguiente pasajero
-      </button>
+      <section id="controlesEscaneo" class="oculto">
+
+        <label for="etapa">Tipo de control</label>
+
+        <select id="etapa">
+          <option value="IDA">IDA</option>
+          <option value="REGRESO">REGRESO</option>
+        </select>
+
+        <div id="lector"></div>
+
+        <button id="btnCamara" onclick="iniciarCamara()">
+          Activar cámara
+        </button>
+
+        <button id="btnSiguiente" class="secundario oculto"
+                onclick="iniciarCamara()">
+          Escanear siguiente pasajero
+        </button>
+
+      </section>
 
       <button class="secundario" onclick="cerrarSesion()">
         Cerrar sesión
       </button>
+
     </section>
 
-    <div id="estado">Ingresá con tus datos de coordinador.</div>
+    <div id="estado">
+      Ingresá con tus datos de coordinador.
+    </div>
   </main>
 
 <script>
@@ -132,9 +200,11 @@
 
   let sesion = "";
   let nombreCoordinador = "";
+  let puedeAbrirSalidas = false;
   let escaner = null;
   let procesando = false;
   let camaraActiva = false;
+  let salidaActiva = false;
 
   function mostrarEstado(mensaje) {
     document.getElementById("estado").textContent = mensaje;
@@ -180,13 +250,128 @@
 
       sesion = resultado.token;
       nombreCoordinador = resultado.nombre;
+      puedeAbrirSalidas = resultado.puedeAbrirSalidas === true;
 
       document.getElementById("login").classList.add("oculto");
       document.getElementById("panel").classList.remove("oculto");
+
       document.getElementById("coordinador").textContent =
         "Coordinador: " + nombreCoordinador;
 
-      mostrarEstado("Sesión iniciada. Elegí IDA o REGRESO y activá la cámara.");
+      if (puedeAbrirSalidas) {
+        document.getElementById("controlesAutorizados")
+          .classList.remove("oculto");
+      }
+
+      await actualizarEstadoSalida();
+
+      mostrarEstado("Sesión iniciada correctamente.");
+
+    } catch (error) {
+      mostrarEstado(error.message);
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  async function actualizarEstadoSalida() {
+    try {
+      const resultado = await llamarAPI({
+        action: "estado",
+        tokenSesion: sesion
+      });
+
+      salidaActiva = resultado.activa;
+
+      const texto = document.getElementById("estadoSalida");
+      const detalle = document.getElementById("detalleSalida");
+
+      if (salidaActiva) {
+        texto.textContent = "SALIDA ABIERTA";
+        texto.className = "con-salida";
+
+        detalle.textContent =
+          "Semana " + resultado.salida.semana +
+          "\nAbierta por: " + resultado.salida.abiertaPor;
+
+        document.getElementById("controlesEscaneo")
+          .classList.remove("oculto");
+
+        document.getElementById("btnAbrir")
+          .classList.add("oculto");
+
+        document.getElementById("btnCerrar")
+          .classList.remove("oculto");
+
+      } else {
+        texto.textContent = "NO HAY SALIDA ABIERTA";
+        texto.className = "sin-salida";
+        detalle.textContent = "";
+
+        document.getElementById("controlesEscaneo")
+          .classList.add("oculto");
+
+        document.getElementById("btnAbrir")
+          .classList.toggle("oculto", !puedeAbrirSalidas);
+
+        document.getElementById("btnCerrar")
+          .classList.add("oculto");
+      }
+
+    } catch (error) {
+      mostrarEstado(error.message);
+    }
+  }
+
+  async function abrirNuevaSalida() {
+    if (!puedeAbrirSalidas) return;
+
+    if (!confirm("¿Querés abrir una nueva salida para toda la semana?")) {
+      return;
+    }
+
+    const boton = document.getElementById("btnAbrir");
+    boton.disabled = true;
+
+    try {
+      await llamarAPI({
+        action: "abrir_salida",
+        tokenSesion: sesion
+      });
+
+      await actualizarEstadoSalida();
+      mostrarEstado("Nueva salida abierta correctamente para todos los coordinadores.");
+
+    } catch (error) {
+      mostrarEstado(error.message);
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  async function cerrarSalidaActual() {
+    if (!puedeAbrirSalidas) return;
+
+    if (!confirm("¿Seguro que querés cerrar esta salida?")) {
+      return;
+    }
+
+    const boton = document.getElementById("btnCerrar");
+    boton.disabled = true;
+
+    try {
+      await llamarAPI({
+        action: "cerrar_salida",
+        tokenSesion: sesion
+      });
+
+      if (escaner && camaraActiva) {
+        await escaner.stop();
+        camaraActiva = false;
+      }
+
+      await actualizarEstadoSalida();
+      mostrarEstado("Salida cerrada correctamente.");
 
     } catch (error) {
       mostrarEstado(error.message);
@@ -196,7 +381,7 @@
   }
 
   async function iniciarCamara() {
-    if (!sesion || camaraActiva) return;
+    if (!sesion || camaraActiva || !salidaActiva) return;
 
     if (!window.isSecureContext ||
         !navigator.mediaDevices ||
@@ -206,6 +391,7 @@
     }
 
     procesando = false;
+
     document.getElementById("btnCamara").classList.add("oculto");
     document.getElementById("btnSiguiente").classList.add("oculto");
 
@@ -232,13 +418,14 @@
     } catch (error) {
       camaraActiva = false;
       document.getElementById("btnCamara").classList.remove("oculto");
+
       mostrarEstado("No se pudo activar la cámara.\n" +
         (error.message || error));
     }
   }
 
   async function procesarQR(codigoQR) {
-    if (procesando || !sesion) return;
+    if (procesando || !sesion || !salidaActiva) return;
 
     procesando = true;
 
@@ -261,7 +448,8 @@
         "✓ REGISTRO CORRECTO\n\n" +
         resultado.nombre + "\n" +
         resultado.etapa + "\n" +
-        "Coordinador: " + resultado.coordinador
+        "Coordinador: " + resultado.coordinador +
+        "\nSemana: " + resultado.semana
       );
 
     } catch (error) {
@@ -280,9 +468,7 @@
           action: "logout",
           tokenSesion: sesion
         });
-      } catch (error) {
-        // Se cierra igualmente la sesión local.
-      }
+      } catch (error) {}
     }
 
     if (escaner && camaraActiva) {
@@ -294,10 +480,18 @@
     sesion = "";
     camaraActiva = false;
     procesando = false;
+    salidaActiva = false;
 
     document.getElementById("panel").classList.add("oculto");
     document.getElementById("login").classList.remove("oculto");
     document.getElementById("codigo").value = "";
+
+    document.getElementById("controlesAutorizados")
+      .classList.add("oculto");
+
+    document.getElementById("controlesEscaneo")
+      .classList.add("oculto");
+
     document.getElementById("btnCamara").classList.remove("oculto");
     document.getElementById("btnSiguiente").classList.add("oculto");
 
