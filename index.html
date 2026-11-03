@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -465,14 +464,14 @@
           const nombre = document.createElement("strong");
           nombre.textContent = (i + 1) + ". " + p.apellido + ", " + p.nombre;
 
-          const documento = document.createElement("div");
-          documento.textContent = "Documento: " + p.documento;
+          const telefono = document.createElement("div");
+          telefono.textContent = "Teléfono: " + (p.telefono || "No informado");
 
           const grupo = document.createElement("div");
           grupo.textContent = "Grupo: " + p.grupo;
 
           item.appendChild(nombre);
-          item.appendChild(documento);
+          item.appendChild(telefono);
           item.appendChild(grupo);
           lista.appendChild(item);
         });
@@ -542,7 +541,6 @@
   async function cerrarSalidaActual() {
     if (!puedeAbrirSalidas || !salidaActiva) return;
 
-    // Primero se muestra la pestaña de pendientes para revisar.
     mostrarPestana("pendientes");
     await actualizarPendientes(false);
 
@@ -594,14 +592,14 @@
           const nombre = document.createElement("strong");
           nombre.textContent = (i + 1) + ". " + p.apellido + ", " + p.nombre;
 
-          const documento = document.createElement("div");
-          documento.textContent = "Documento: " + p.documento;
+          const telefono = document.createElement("div");
+          telefono.textContent = "Teléfono: " + (p.telefono || "No informado");
 
           const grupo = document.createElement("div");
           grupo.textContent = "Grupo: " + p.grupo;
 
           item.appendChild(nombre);
-          item.appendChild(documento);
+          item.appendChild(telefono);
           item.appendChild(grupo);
           lista.appendChild(item);
         });
@@ -612,7 +610,6 @@
 
       await actualizarEstadoSalida();
 
-      // Se vuelve a mostrar la pestaña para conservar la lista del cierre.
       document.getElementById("zonaTrabajo").classList.remove("oculto");
       document.getElementById("pestanaPendientes").classList.remove("oculto");
       document.getElementById("pestanaEscanear").classList.add("oculto");
@@ -704,7 +701,6 @@
         "\nSemana: " + resultado.semana
       );
 
-      // Actualiza pendientes inmediatamente después de cada escaneo.
       await actualizarPendientes(false);
 
     } catch (error) {
