@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BREAK | Control de pasajeros</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -25,7 +26,10 @@
       box-shadow: 0 3px 16px #00000012;
     }
 
-    h1 { text-align: center; margin: 0 0 6px; }
+    h1 {
+      text-align: center;
+      margin: 0 0 6px;
+    }
 
     .subtitulo {
       text-align: center;
@@ -60,7 +64,9 @@
       cursor: pointer;
     }
 
-    button:disabled { opacity: .5; }
+    button:disabled {
+      opacity: .5;
+    }
 
     .secundario {
       background: #e7eaee;
@@ -87,7 +93,9 @@
       text-align: center;
     }
 
-    .oculto { display: none; }
+    .oculto {
+      display: none;
+    }
 
     .nombre-coordinador {
       text-align: center;
@@ -118,11 +126,27 @@
       color: #176b3a;
       font-weight: bold;
     }
+
+    #pendientes {
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 1px solid #d4dbe1;
+      text-align: left;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .titulo-pendientes {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 
 <body>
   <main class="contenedor">
+
     <h1>BREAK</h1>
     <div class="subtitulo">Control de excursiones</div>
 
@@ -148,6 +172,7 @@
         <strong>ESTADO DE LA SALIDA</strong>
         <div id="estadoSalida">Consultando...</div>
         <div id="detalleSalida"></div>
+        <div id="pendientes"></div>
       </div>
 
       <section id="controlesAutorizados" class="oculto">
@@ -192,6 +217,7 @@
     <div id="estado">
       Ingresá con tus datos de coordinador.
     </div>
+
   </main>
 
 <script>
@@ -326,10 +352,6 @@
   async function abrirNuevaSalida() {
     if (!puedeAbrirSalidas) return;
 
-    if (!confirm("¿Querés abrir una nueva salida para toda la semana?")) {
-      return;
-    }
-
     const boton = document.getElementById("btnAbrir");
     boton.disabled = true;
 
@@ -339,8 +361,13 @@
         tokenSesion: sesion
       });
 
+      document.getElementById("pendientes").textContent = "";
+
       await actualizarEstadoSalida();
-      mostrarEstado("Nueva salida abierta correctamente para todos los coordinadores.");
+
+      mostrarEstado(
+        "Nueva salida abierta correctamente para todos los coordinadores."
+      );
 
     } catch (error) {
       mostrarEstado(error.message);
@@ -352,15 +379,11 @@
   async function cerrarSalidaActual() {
     if (!puedeAbrirSalidas) return;
 
-    if (!confirm("¿Seguro que querés cerrar esta salida?")) {
-      return;
-    }
-
     const boton = document.getElementById("btnCerrar");
     boton.disabled = true;
 
     try {
-      await llamarAPI({
+      const resultado = await llamarAPI({
         action: "cerrar_salida",
         tokenSesion: sesion
       });
@@ -370,8 +393,35 @@
         camaraActiva = false;
       }
 
+      const pendientes = resultado.pendientes || [];
+      const contenedor = document.getElementById("pendientes");
+
+      if (pendientes.length === 0) {
+        contenedor.textContent =
+          "✓ NO HAY PASAJEROS PENDIENTES DE REGRESO";
+      } else {
+        let texto =
+          "PENDIENTES DE REGRESO: " + pendientes.length + "\n\n";
+
+        pendientes.forEach((p, i) => {
+          texto +=
+            (i + 1) + ". " +
+            p.apellido + ", " + p.nombre +
+            "\nDocumento: " + p.documento +
+            "\nGrupo: " + p.grupo +
+            "\n\n";
+        });
+
+        contenedor.textContent = texto;
+      }
+
       await actualizarEstadoSalida();
-      mostrarEstado("Salida cerrada correctamente.");
+
+      mostrarEstado(
+        "SALIDA CERRADA CORRECTAMENTE.\n" +
+        "Pasajeros pendientes de regreso: " +
+        pendientes.length
+      );
 
     } catch (error) {
       mostrarEstado(error.message);
@@ -419,8 +469,10 @@
       camaraActiva = false;
       document.getElementById("btnCamara").classList.remove("oculto");
 
-      mostrarEstado("No se pudo activar la cámara.\n" +
-        (error.message || error));
+      mostrarEstado(
+        "No se pudo activar la cámara.\n" +
+        (error.message || error)
+      );
     }
   }
 
@@ -456,6 +508,7 @@
       mostrarEstado("⚠ " + error.message);
     } finally {
       procesando = false;
+
       document.getElementById("btnSiguiente")
         .classList.remove("oculto");
     }
@@ -494,6 +547,7 @@
 
     document.getElementById("btnCamara").classList.remove("oculto");
     document.getElementById("btnSiguiente").classList.add("oculto");
+    document.getElementById("pendientes").textContent = "";
 
     mostrarEstado("Sesión cerrada. Podés volver a ingresar.");
   }
