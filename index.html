@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,10 +27,7 @@
       box-shadow: 0 3px 16px #00000012;
     }
 
-    h1 {
-      text-align: center;
-      margin: 0 0 6px;
-    }
+    h1 { text-align: center; margin: 0 0 6px; }
 
     .subtitulo {
       text-align: center;
@@ -64,24 +62,16 @@
       cursor: pointer;
     }
 
-    button:disabled {
-      opacity: .5;
-    }
+    button:disabled { opacity: .5; }
 
     .secundario {
       background: #e7eaee;
       color: #20252b;
     }
 
-    .peligro {
-      background: #a52b2b;
-      color: white;
-    }
+    .peligro { background: #a52b2b; color: white; }
 
-    #lector {
-      width: 100%;
-      margin-top: 18px;
-    }
+    #lector { width: 100%; margin-top: 18px; }
 
     #estado {
       margin-top: 18px;
@@ -93,9 +83,7 @@
       text-align: center;
     }
 
-    .oculto {
-      display: none;
-    }
+    .oculto { display: none !important; }
 
     .nombre-coordinador {
       text-align: center;
@@ -112,34 +100,73 @@
       line-height: 1.5;
     }
 
-    .salida strong {
-      display: block;
-      margin-bottom: 5px;
+    .salida strong { display: block; margin-bottom: 5px; }
+
+    .sin-salida { color: #a52b2b; font-weight: bold; }
+    .con-salida { color: #176b3a; font-weight: bold; }
+
+    .pestanas {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
     }
 
-    .sin-salida {
-      color: #a52b2b;
+    .pestanas button {
+      margin-top: 0;
+      background: #e7eaee;
+      color: #20252b;
+      flex: 1;
+    }
+
+    .pestanas button.activa {
+      background: #171c22;
+      color: white;
+    }
+
+    .contenido-pestana {
+      margin-top: 16px;
+    }
+
+    .contador {
+      text-align: center;
+      font-size: 17px;
       font-weight: bold;
+      margin: 12px 0;
     }
 
-    .con-salida {
-      color: #176b3a;
-      font-weight: bold;
-    }
-
-    #pendientes {
-      margin-top: 15px;
-      padding-top: 12px;
-      border-top: 1px solid #d4dbe1;
-      text-align: left;
-      white-space: pre-wrap;
+    .item-pendiente {
+      padding: 12px;
+      margin-bottom: 9px;
+      border: 1px solid #e0e4e8;
+      border-radius: 9px;
       line-height: 1.5;
       overflow-wrap: anywhere;
     }
 
-    .titulo-pendientes {
+    .item-pendiente strong { display: block; }
+
+    .sin-pendientes {
+      padding: 18px 10px;
+      text-align: center;
+      color: #176b3a;
       font-weight: bold;
-      margin-bottom: 10px;
+      background: #edf7f0;
+      border-radius: 9px;
+    }
+
+    .actualizacion {
+      text-align: center;
+      font-size: 12px;
+      color: #68717b;
+      margin-top: 12px;
+    }
+
+    .aviso-cierre {
+      padding: 12px;
+      background: #fff5e5;
+      border-radius: 9px;
+      line-height: 1.45;
+      margin-top: 12px;
     }
   </style>
 </head>
@@ -159,9 +186,7 @@
              inputmode="numeric" maxlength="6"
              placeholder="6 dígitos">
 
-      <button id="btnLogin" onclick="iniciarSesion()">
-        Ingresar
-      </button>
+      <button id="btnLogin" onclick="iniciarSesion()">Ingresar</button>
     </section>
 
     <section id="panel" class="oculto">
@@ -172,7 +197,6 @@
         <strong>ESTADO DE LA SALIDA</strong>
         <div id="estadoSalida">Consultando...</div>
         <div id="detalleSalida"></div>
-        <div id="pendientes"></div>
       </div>
 
       <section id="controlesAutorizados" class="oculto">
@@ -180,33 +204,69 @@
           Abrir nueva salida
         </button>
 
-        <button id="btnCerrar" class="peligro"
+        <button id="btnCerrar" class="peligro oculto"
                 onclick="cerrarSalidaActual()">
           Cerrar salida
         </button>
       </section>
 
-      <section id="controlesEscaneo" class="oculto">
+      <div id="zonaTrabajo" class="oculto">
 
-        <label for="etapa">Tipo de control</label>
+        <div class="pestanas">
+          <button id="tabEscanear" class="activa"
+                  onclick="mostrarPestana('escanear')">
+            ESCANEAR
+          </button>
 
-        <select id="etapa">
-          <option value="IDA">IDA</option>
-          <option value="REGRESO">REGRESO</option>
-        </select>
+          <button id="tabPendientes"
+                  onclick="mostrarPestana('pendientes')">
+            PENDIENTES
+          </button>
+        </div>
 
-        <div id="lector"></div>
+        <section id="pestanaEscanear" class="contenido-pestana">
 
-        <button id="btnCamara" onclick="iniciarCamara()">
-          Activar cámara
-        </button>
+          <label for="etapa">Tipo de control</label>
 
-        <button id="btnSiguiente" class="secundario oculto"
-                onclick="iniciarCamara()">
-          Escanear siguiente pasajero
-        </button>
+          <select id="etapa">
+            <option value="IDA">IDA</option>
+            <option value="REGRESO">REGRESO</option>
+          </select>
 
-      </section>
+          <div id="lector"></div>
+
+          <button id="btnCamara" onclick="iniciarCamara()">
+            Activar cámara
+          </button>
+
+          <button id="btnSiguiente" class="secundario oculto"
+                  onclick="iniciarCamara()">
+            Escanear siguiente pasajero
+          </button>
+
+        </section>
+
+        <section id="pestanaPendientes" class="contenido-pestana oculto">
+          <div class="contador" id="contadorPendientes">
+            Consultando pendientes...
+          </div>
+
+          <div id="listaPendientes"></div>
+
+          <div class="actualizacion" id="horaActualizacion">
+            La lista se actualiza automáticamente.
+          </div>
+
+          <button class="secundario" onclick="actualizarPendientes(true)">
+            Actualizar ahora
+          </button>
+
+          <div id="avisoCierre" class="aviso-cierre oculto">
+            Revisá esta lista antes de cerrar la salida.
+          </div>
+        </section>
+
+      </div>
 
       <button class="secundario" onclick="cerrarSesion()">
         Cerrar sesión
@@ -214,15 +274,12 @@
 
     </section>
 
-    <div id="estado">
-      Ingresá con tus datos de coordinador.
-    </div>
+    <div id="estado">Ingresá con tus datos de coordinador.</div>
 
   </main>
 
 <script>
-  const API_URL =
-    "https://break-qr-api.maxpietra306.workers.dev";
+  const API_URL = "https://break-qr-api.maxpietra306.workers.dev";
 
   let sesion = "";
   let nombreCoordinador = "";
@@ -231,6 +288,9 @@
   let procesando = false;
   let camaraActiva = false;
   let salidaActiva = false;
+  let temporizadorPendientes = null;
+  let consultandoPendientes = false;
+  let idSalidaActual = "";
 
   function mostrarEstado(mensaje) {
     document.getElementById("estado").textContent = mensaje;
@@ -239,9 +299,7 @@
   async function llamarAPI(datos) {
     const respuesta = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(datos)
     });
 
@@ -290,6 +348,7 @@
       }
 
       await actualizarEstadoSalida();
+      iniciarActualizacionAutomatica();
 
       mostrarEstado("Sesión iniciada correctamente.");
 
@@ -308,11 +367,12 @@
       });
 
       salidaActiva = resultado.activa;
-
       const texto = document.getElementById("estadoSalida");
       const detalle = document.getElementById("detalleSalida");
 
       if (salidaActiva) {
+        idSalidaActual = resultado.salida.id;
+
         texto.textContent = "SALIDA ABIERTA";
         texto.className = "con-salida";
 
@@ -320,32 +380,136 @@
           "Semana " + resultado.salida.semana +
           "\nAbierta por: " + resultado.salida.abiertaPor;
 
-        document.getElementById("controlesEscaneo")
-          .classList.remove("oculto");
+        document.getElementById("zonaTrabajo").classList.remove("oculto");
+        document.getElementById("btnAbrir").classList.add("oculto");
 
-        document.getElementById("btnAbrir")
-          .classList.add("oculto");
+        if (puedeAbrirSalidas) {
+          document.getElementById("btnCerrar").classList.remove("oculto");
+        }
 
-        document.getElementById("btnCerrar")
-          .classList.remove("oculto");
+        await actualizarPendientes(false);
 
       } else {
+        idSalidaActual = "";
         texto.textContent = "NO HAY SALIDA ABIERTA";
         texto.className = "sin-salida";
         detalle.textContent = "";
 
-        document.getElementById("controlesEscaneo")
-          .classList.add("oculto");
+        document.getElementById("zonaTrabajo").classList.add("oculto");
+        document.getElementById("btnCerrar").classList.add("oculto");
 
         document.getElementById("btnAbrir")
           .classList.toggle("oculto", !puedeAbrirSalidas);
-
-        document.getElementById("btnCerrar")
-          .classList.add("oculto");
       }
 
     } catch (error) {
       mostrarEstado(error.message);
+    }
+  }
+
+  function mostrarPestana(nombre) {
+    const escanear = nombre === "escanear";
+
+    document.getElementById("pestanaEscanear")
+      .classList.toggle("oculto", !escanear);
+
+    document.getElementById("pestanaPendientes")
+      .classList.toggle("oculto", escanear);
+
+    document.getElementById("tabEscanear")
+      .classList.toggle("activa", escanear);
+
+    document.getElementById("tabPendientes")
+      .classList.toggle("activa", !escanear);
+
+    if (!escanear) actualizarPendientes(true);
+  }
+
+  async function actualizarPendientes(mostrarMensaje) {
+    if (!sesion || consultandoPendientes) return;
+
+    consultandoPendientes = true;
+
+    try {
+      const resultado = await llamarAPI({
+        action: "pendientes",
+        tokenSesion: sesion
+      });
+
+      if (!resultado.activa) {
+        document.getElementById("contadorPendientes").textContent =
+          "No hay una salida abierta.";
+        document.getElementById("listaPendientes").innerHTML = "";
+        return;
+      }
+
+      const pendientes = resultado.pendientes || [];
+      const contador = document.getElementById("contadorPendientes");
+      const lista = document.getElementById("listaPendientes");
+
+      contador.textContent =
+        "PENDIENTES DE REGRESO: " + pendientes.length;
+
+      lista.innerHTML = "";
+
+      if (pendientes.length === 0) {
+        const mensaje = document.createElement("div");
+        mensaje.className = "sin-pendientes";
+        mensaje.textContent = "✓ TODOS LOS PASAJEROS REGISTRADOS TIENEN SU REGRESO.";
+        lista.appendChild(mensaje);
+      } else {
+        pendientes.forEach((p, i) => {
+          const item = document.createElement("div");
+          item.className = "item-pendiente";
+
+          const nombre = document.createElement("strong");
+          nombre.textContent = (i + 1) + ". " + p.apellido + ", " + p.nombre;
+
+          const documento = document.createElement("div");
+          documento.textContent = "Documento: " + p.documento;
+
+          const grupo = document.createElement("div");
+          grupo.textContent = "Grupo: " + p.grupo;
+
+          item.appendChild(nombre);
+          item.appendChild(documento);
+          item.appendChild(grupo);
+          lista.appendChild(item);
+        });
+      }
+
+      document.getElementById("horaActualizacion").textContent =
+        "Última actualización: " + new Date().toLocaleTimeString();
+
+      if (mostrarMensaje) {
+        mostrarEstado("Lista de pendientes actualizada.");
+      }
+
+    } catch (error) {
+      if (mostrarMensaje) mostrarEstado(error.message);
+    } finally {
+      consultandoPendientes = false;
+    }
+  }
+
+  function iniciarActualizacionAutomatica() {
+    detenerActualizacionAutomatica();
+
+    temporizadorPendientes = setInterval(async () => {
+      if (!sesion) return;
+
+      await actualizarEstadoSalida();
+
+      if (salidaActiva) {
+        await actualizarPendientes(false);
+      }
+    }, 5000);
+  }
+
+  function detenerActualizacionAutomatica() {
+    if (temporizadorPendientes) {
+      clearInterval(temporizadorPendientes);
+      temporizadorPendientes = null;
     }
   }
 
@@ -361,9 +525,8 @@
         tokenSesion: sesion
       });
 
-      document.getElementById("pendientes").textContent = "";
-
       await actualizarEstadoSalida();
+      mostrarPestana("escanear");
 
       mostrarEstado(
         "Nueva salida abierta correctamente para todos los coordinadores."
@@ -377,7 +540,21 @@
   }
 
   async function cerrarSalidaActual() {
-    if (!puedeAbrirSalidas) return;
+    if (!puedeAbrirSalidas || !salidaActiva) return;
+
+    // Primero se muestra la pestaña de pendientes para revisar.
+    mostrarPestana("pendientes");
+    await actualizarPendientes(false);
+
+    const confirmar = confirm(
+      "Antes de cerrar, revisá la pestaña PENDIENTES.\n\n" +
+      "¿Confirmás que querés cerrar esta salida?"
+    );
+
+    if (!confirmar) {
+      mostrarEstado("Cierre cancelado. La salida continúa abierta.");
+      return;
+    }
 
     const boton = document.getElementById("btnCerrar");
     boton.disabled = true;
@@ -388,39 +565,65 @@
         tokenSesion: sesion
       });
 
+      salidaActiva = false;
+
       if (escaner && camaraActiva) {
         await escaner.stop();
         camaraActiva = false;
       }
 
       const pendientes = resultado.pendientes || [];
-      const contenedor = document.getElementById("pendientes");
+      const contador = document.getElementById("contadorPendientes");
+      const lista = document.getElementById("listaPendientes");
+
+      contador.textContent =
+        "PENDIENTES AL CIERRE: " + pendientes.length;
+
+      lista.innerHTML = "";
 
       if (pendientes.length === 0) {
-        contenedor.textContent =
-          "✓ NO HAY PASAJEROS PENDIENTES DE REGRESO";
+        const mensaje = document.createElement("div");
+        mensaje.className = "sin-pendientes";
+        mensaje.textContent = "✓ NO HAY PASAJEROS PENDIENTES DE REGRESO.";
+        lista.appendChild(mensaje);
       } else {
-        let texto =
-          "PENDIENTES DE REGRESO: " + pendientes.length + "\n\n";
-
         pendientes.forEach((p, i) => {
-          texto +=
-            (i + 1) + ". " +
-            p.apellido + ", " + p.nombre +
-            "\nDocumento: " + p.documento +
-            "\nGrupo: " + p.grupo +
-            "\n\n";
-        });
+          const item = document.createElement("div");
+          item.className = "item-pendiente";
 
-        contenedor.textContent = texto;
+          const nombre = document.createElement("strong");
+          nombre.textContent = (i + 1) + ". " + p.apellido + ", " + p.nombre;
+
+          const documento = document.createElement("div");
+          documento.textContent = "Documento: " + p.documento;
+
+          const grupo = document.createElement("div");
+          grupo.textContent = "Grupo: " + p.grupo;
+
+          item.appendChild(nombre);
+          item.appendChild(documento);
+          item.appendChild(grupo);
+          lista.appendChild(item);
+        });
       }
+
+      document.getElementById("horaActualizacion").textContent =
+        "Salida cerrada por " + nombreCoordinador;
 
       await actualizarEstadoSalida();
 
+      // Se vuelve a mostrar la pestaña para conservar la lista del cierre.
+      document.getElementById("zonaTrabajo").classList.remove("oculto");
+      document.getElementById("pestanaPendientes").classList.remove("oculto");
+      document.getElementById("pestanaEscanear").classList.add("oculto");
+      document.getElementById("tabPendientes").classList.add("activa");
+      document.getElementById("tabEscanear").classList.remove("activa");
+
+      document.getElementById("avisoCierre").classList.remove("oculto");
+
       mostrarEstado(
         "SALIDA CERRADA CORRECTAMENTE.\n" +
-        "Pasajeros pendientes de regreso: " +
-        pendientes.length
+        "Pendientes de regreso: " + pendientes.length
       );
 
     } catch (error) {
@@ -446,9 +649,7 @@
     document.getElementById("btnSiguiente").classList.add("oculto");
 
     try {
-      if (!escaner) {
-        escaner = new Html5Qrcode("lector");
-      }
+      if (!escaner) escaner = new Html5Qrcode("lector");
 
       mostrarEstado("Solicitando acceso a la cámara...");
 
@@ -470,8 +671,7 @@
       document.getElementById("btnCamara").classList.remove("oculto");
 
       mostrarEstado(
-        "No se pudo activar la cámara.\n" +
-        (error.message || error)
+        "No se pudo activar la cámara.\n" + (error.message || error)
       );
     }
   }
@@ -504,6 +704,9 @@
         "\nSemana: " + resultado.semana
       );
 
+      // Actualiza pendientes inmediatamente después de cada escaneo.
+      await actualizarPendientes(false);
+
     } catch (error) {
       mostrarEstado("⚠ " + error.message);
     } finally {
@@ -515,6 +718,8 @@
   }
 
   async function cerrarSesion() {
+    detenerActualizacionAutomatica();
+
     if (sesion) {
       try {
         await llamarAPI({
@@ -534,20 +739,20 @@
     camaraActiva = false;
     procesando = false;
     salidaActiva = false;
+    idSalidaActual = "";
 
     document.getElementById("panel").classList.add("oculto");
     document.getElementById("login").classList.remove("oculto");
     document.getElementById("codigo").value = "";
 
-    document.getElementById("controlesAutorizados")
-      .classList.add("oculto");
-
-    document.getElementById("controlesEscaneo")
-      .classList.add("oculto");
+    document.getElementById("controlesAutorizados").classList.add("oculto");
+    document.getElementById("zonaTrabajo").classList.add("oculto");
 
     document.getElementById("btnCamara").classList.remove("oculto");
     document.getElementById("btnSiguiente").classList.add("oculto");
-    document.getElementById("pendientes").textContent = "";
+
+    document.getElementById("listaPendientes").innerHTML = "";
+    document.getElementById("avisoCierre").classList.add("oculto");
 
     mostrarEstado("Sesión cerrada. Podés volver a ingresar.");
   }
