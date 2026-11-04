@@ -198,6 +198,23 @@
              placeholder="6 dígitos">
 
       <button id="btnLogin" onclick="iniciarSesion()">Ingresar</button>
+      <button type="button" class="secundario" onclick="mostrarRegistro()">Registrarme como coordinador</button>
+    </section>
+
+    <section id="registro" class="oculto">
+      <h2>Registro de coordinador</h2>
+      <label for="registroNombre">Nombre</label>
+      <input id="registroNombre" type="text" maxlength="60" autocomplete="given-name">
+      <label for="registroApellido">Apellido</label>
+      <input id="registroApellido" type="text" maxlength="60" autocomplete="family-name">
+      <label for="registroEmail">Correo electrónico</label>
+      <input id="registroEmail" type="email" maxlength="120" autocomplete="email">
+      <label for="registroCodigo">Elegí un código personal de 6 dígitos</label>
+      <input id="registroCodigo" type="password" inputmode="numeric" maxlength="6" placeholder="6 dígitos" autocomplete="new-password">
+      <label for="registroCodigoConfirmar">Repetí el código</label>
+      <input id="registroCodigoConfirmar" type="password" inputmode="numeric" maxlength="6" placeholder="Repetí los 6 dígitos" autocomplete="new-password">
+      <button id="btnRegistro" onclick="enviarRegistro()">Enviar solicitud</button>
+      <button type="button" class="secundario" onclick="mostrarLogin()">Volver al ingreso</button>
     </section>
 
     <section id="panel" class="oculto">
@@ -321,6 +338,58 @@
     }
 
     return resultado.resultado;
+  }
+
+  function mostrarRegistro() {
+    document.getElementById('login').classList.add('oculto');
+    document.getElementById('registro').classList.remove('oculto');
+    mostrarEstado('Completá tus datos para solicitar acceso.');
+  }
+
+  function mostrarLogin() {
+    document.getElementById('registro').classList.add('oculto');
+    document.getElementById('login').classList.remove('oculto');
+    mostrarEstado('Ingresá con tus datos de coordinador.');
+  }
+
+  async function enviarRegistro() {
+    const nombre = document.getElementById('registroNombre').value.trim();
+    const apellido = document.getElementById('registroApellido').value.trim();
+    const email = document.getElementById('registroEmail').value.trim();
+    const codigo = document.getElementById('registroCodigo').value.trim();
+    const confirmar = document.getElementById('registroCodigoConfirmar').value.trim();
+    const boton = document.getElementById('btnRegistro');
+    if (!nombre || !apellido || !email || !codigo || !confirmar) {
+      mostrarEstado('Completá todos los campos.');
+      return;
+    }
+    if (!/^\d{6}$/.test(codigo)) {
+      mostrarEstado('El código debe tener exactamente 6 dígitos.');
+      return;
+    }
+    if (codigo !== confirmar) {
+      mostrarEstado('Los códigos no coinciden.');
+      return;
+    }
+    boton.disabled = true;
+    mostrarEstado('Enviando solicitud...');
+    try {
+      const resultado = await llamarAPI({
+        action: 'registro_coordinador',
+        nombre: nombre,
+        apellido: apellido,
+        email: email,
+        codigo: codigo
+      });
+      document.getElementById('registro').classList.add('oculto');
+      mostrarEstado(resultado.mensaje || 'Solicitud enviada. Esperá la aprobación del administrador.');
+      document.getElementById('registroCodigo').value = '';
+      document.getElementById('registroCodigoConfirmar').value = '';
+    } catch (error) {
+      mostrarEstado(error.message);
+    } finally {
+      boton.disabled = false;
+    }
   }
 
   async function iniciarSesion() {
