@@ -707,9 +707,13 @@
           const grupo = document.createElement("div");
           grupo.textContent = "Grupo: " + p.grupo;
 
+          const coordinador = document.createElement("div");
+          coordinador.textContent = "Coordinador: " + (p.coordinador || "No asignado");
+
           item.appendChild(nombre);
           item.appendChild(telefono);
           item.appendChild(grupo);
+          item.appendChild(coordinador);
           lista.appendChild(item);
         });
       }
@@ -835,9 +839,13 @@
           const grupo = document.createElement("div");
           grupo.textContent = "Grupo: " + p.grupo;
 
+          const coordinador = document.createElement("div");
+          coordinador.textContent = "Coordinador: " + (p.coordinador || "No asignado");
+
           item.appendChild(nombre);
           item.appendChild(telefono);
           item.appendChild(grupo);
+          item.appendChild(coordinador);
           lista.appendChild(item);
         });
       }
