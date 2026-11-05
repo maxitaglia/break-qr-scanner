@@ -199,6 +199,15 @@
 
       <button id="btnLogin" onclick="iniciarSesion()">Ingresar</button>
       <button type="button" class="secundario" onclick="mostrarRegistro()">Registrarme como coordinador</button>
+
+      <div style="border-top:1px solid #e0e4e8;margin-top:24px;padding-top:18px;">
+        <h2 style="font-size:19px;text-align:center;margin:0 0 8px;">¿Necesitás recuperar tu QR?</h2>
+        <p style="font-size:14px;line-height:1.45;color:#68717b;text-align:center;margin:0;">Ingresá tu DNI para consultar tus credenciales BREAK activas.</p>
+        <label for="dniQR">DNI</label>
+        <input id="dniQR" type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Sin puntos ni espacios">
+        <button id="btnObtenerQR" onclick="obtenerQRPorDNI()">OBTENER MI QR</button>
+        <div id="resultadoQR" class="oculto" aria-live="polite" style="margin-top:16px;"></div>
+      </div>
     </section>
 
     <section id="registro" class="oculto">
@@ -387,6 +396,51 @@
       document.getElementById('registroCodigoConfirmar').value = '';
     } catch (error) {
       mostrarEstado(error.message);
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  async function obtenerQRPorDNI() {
+    const documento = document.getElementById('dniQR').value.replace(/\D/g, '');
+    const boton = document.getElementById('btnObtenerQR');
+    const contenedor = document.getElementById('resultadoQR');
+    contenedor.classList.remove('oculto');
+    contenedor.textContent = '';
+    if (!/^\d{7,9}$/.test(documento)) {
+      contenedor.textContent = 'Ingresá un DNI válido, sin puntos ni espacios.';
+      return;
+    }
+    boton.disabled = true;
+    contenedor.textContent = 'Buscando tus credenciales...';
+    try {
+      const credenciales = await llamarAPI({ action: 'obtener_qr_dni', documento: documento });
+      contenedor.textContent = '';
+      credenciales.forEach((credencial, indice) => {
+        const tarjeta = document.createElement('div');
+        tarjeta.style.cssText = 'border:1px solid #e0e4e8;border-radius:10px;padding:14px;margin-top:12px;text-align:center;';
+        const titulo = document.createElement('strong');
+        titulo.textContent = credencial.nombre || 'Credencial BREAK';
+        const detalle = document.createElement('p');
+        detalle.style.cssText = 'font-size:14px;color:#68717b;margin:7px 0;';
+        detalle.textContent = 'Salida: ' + credencial.fechaSalida + (credencial.micro ? ' · Micro: ' + credencial.micro : '');
+        const imagen = document.createElement('img');
+        imagen.alt = 'Código QR BREAK';
+        imagen.src = 'data:image/png;base64,' + credencial.qr;
+        imagen.style.cssText = 'display:block;width:220px;max-width:100%;height:auto;margin:10px auto;';
+        const descargar = document.createElement('a');
+        descargar.href = imagen.src;
+        descargar.download = 'BREAK-QR-' + (indice + 1) + '.png';
+        descargar.textContent = 'Descargar QR';
+        descargar.style.cssText = 'display:inline-block;padding:11px 16px;background:#171c22;color:white;text-decoration:none;border-radius:8px;font-weight:bold;';
+        tarjeta.appendChild(titulo);
+        tarjeta.appendChild(detalle);
+        tarjeta.appendChild(imagen);
+        tarjeta.appendChild(descargar);
+        contenedor.appendChild(tarjeta);
+      });
+    } catch (error) {
+      contenedor.textContent = error.message || 'No se pudo recuperar la credencial.';
     } finally {
       boton.disabled = false;
     }
