@@ -201,7 +201,7 @@
       <button type="button" class="secundario" onclick="mostrarRegistro()">Registrarme como coordinador</button>
 
       <div style="border-top:1px solid #e0e4e8;margin-top:24px;padding-top:18px;">
-        <h2 style="font-size:19px;text-align:center;margin:0 0 8px;">¿Necesitás recuperar tu QR?</h2>
+        <h2 style="font-size:19px;text-align:center;margin:0 0 8px;">¡Genera tu QR para toda la semana!</h2>
         <p style="font-size:14px;line-height:1.45;color:#68717b;text-align:center;margin:0;">Ingresá tu DNI para consultar tus credenciales BREAK activas.</p>
         <label for="dniQR">DNI</label>
         <input id="dniQR" type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Sin puntos ni espacios">
@@ -311,7 +311,7 @@
 
     </section>
 
-    <div id="estado">Ingresá con tus datos de coordinador.</div>
+    <div id="estado"></div>
 
   </main>
 
@@ -358,7 +358,7 @@
   function mostrarLogin() {
     document.getElementById('registro').classList.add('oculto');
     document.getElementById('login').classList.remove('oculto');
-    mostrarEstado('Ingresá con tus datos de coordinador.');
+    mostrarEstado('');
   }
 
   async function enviarRegistro() {
