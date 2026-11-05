@@ -738,11 +738,9 @@
     temporizadorPendientes = setInterval(async () => {
       if (!sesion) return;
 
+      // actualizarEstadoSalida ya consulta pendientes cuando
+      // la salida está abierta; evitamos repetir esa misma consulta.
       await actualizarEstadoSalida();
-
-      if (salidaActiva) {
-        await actualizarPendientes(false);
-      }
     }, 5000);
   }
 
@@ -898,8 +896,9 @@
       await escaner.start(
         { facingMode: "environment" },
         {
-          fps: 10,
-          qrbox: { width: 250, height: 250 }
+          fps: 15,
+          qrbox: { width: 280, height: 280 },
+          aspectRatio: 1.0
         },
         codigo => procesarQR(codigo),
         () => {}
@@ -946,7 +945,9 @@
         "\nSemana: " + resultado.semana
       );
 
-      await actualizarPendientes(false);
+      // Actualizar pendientes en segundo plano para no demorar
+      // la habilitación del botón de siguiente escaneo.
+      actualizarPendientes(false);
 
     } catch (error) {
       mostrarEstado("⚠ " + error.message);
